@@ -1,0 +1,42 @@
+{
+  "name": "box-trader",
+  "version": "0.0.1",
+  "description": "Crypto trading bot using box trading techniqs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist/ && babel src -d dist --source-maps",
+    "start": "npm run build && node -r source-map-support/register dist/server.js",
+    "index": "npm run build && node -r source-map-support/register dist/server.js",
+    "abot": "npm run build && node -r source-map-support/register dist/index.js"
+  },
+  "author": "innoprenuer",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-transform-runtime": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/runtime": "^7.8.4"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "binance-api-node": "^0.9.18",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.0.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-json-validator-middleware": "^2.1.1",
+    "express-jsonschema": "^1.1.6",
+    "google-spreadsheet": "^3.0.11",
+    "kucoin-node-api": "^1.2.0",
+    "lodash": "^4.17.15",
+    "moment": "^2.25.3",
+    "mongoose": "^5.9.2",
+    "querystring": "^0.2.0",
+    "source-map-support": "^0.5.16",
+    "uuid": "^7.0.2",
+    "web3": "^1.2.6",
+    "winston": "^3.2.1"
+  }
+}
