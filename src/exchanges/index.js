@@ -8,13 +8,15 @@ import { remove } from 'lodash'
 import { logger } from '../server/middlewares'
 
 export async function takeAction(decision) {
-    let { exchange, exchangeId, action, symbol, position, size } = decision
+    let { exchange, exchangeId, action, symbol, base, quote } = decision
+    let baseSize = await exchange.getBalance(base)
+    let quoteSize = await exchange.getBalance(quote)
     switch (action) {
         case 'BUY':
             logger.info(`${fileName} : ` + `get best BUY price at Exchange - ${exchangeId}`)
             let buyPrice = await exchange.getBestPrice(symbol, 'BUY')
             // calculate quantity and price
-            let quantity = position / buyPrice
+            let quantity = quoteSize / buyPrice
             // place buy order
             logger.info(`${fileName} : ` + `placing BUY order at Exchange - ${exchangeId}`)
             let buyOrderId = await exchange.placeOrder(symbol, 'BUY', quantity, buyPrice)
@@ -38,18 +40,18 @@ export async function takeAction(decision) {
             let sellPrice = await exchange.getBestPrice(symbol, 'SELL')
             // place sell order
             logger.info(`${fileName} : ` + `placing SELL order at Exchange - ${exchangeId}`)
-            let sellOrderId = await exchange.placeOrder(symbol, 'SELL', size, sellPrice)
+            let sellOrderId = await exchange.placeOrder(symbol, 'SELL', baseSize, sellPrice)
             if (!sellOrderId) {
                 logger.error(`${fileName} : ` + `Something went wrong while SELLing ${symbol}`)
                 throw new Error(`Something went wrong while SELLing ${symbol}`)
             }
             //update position value
-            position = sellPrice * size
+            let position = sellPrice * baseSize
 
             logger.debug(`${fileName} : ` + `trading flag turned OFF for pair - ${symbol}`)
             global.pairs[symbol].canTrade = false
             logger.debug(`${fileName} : ` + `added orderId ${sellOrderId} to trade info for pair - ${symbol}`)
-            let sellTradeInfo = { ...decision, size: 0, position, orderId: sellOrderId }
+            let sellTradeInfo = { ...decision, size: 0, position, price: sellPrice, orderId: sellOrderId }
             global.pairs[symbol].orders.push(sellTradeInfo)
             return sellTradeInfo
 

@@ -1,9 +1,12 @@
 const api = require('kucoin-node-api')
 let path = require('path')
+import hmacSHA256 from 'crypto-js/hmac-sha256'
+import Base64 from 'crypto-js/enc-base64'
 let fileName = path.basename(__filename)
 import axios from 'axios'
 import moment from 'moment'
 import { logger } from '../server/middlewares'
+import { reportError } from '../notifiers'
 require('dotenv').config()
 
 
@@ -16,7 +19,7 @@ class Kucoin {
             passphrase: process.env.kucoin_PASSWORD,
             environment: 'live'
         }
-
+        this.name = process.env.kucoin_NAME
         api.init(config)
     }
 
@@ -33,8 +36,8 @@ class Kucoin {
             console.log(params)
             return `fake-${side}-` + Date.now()
         } catch (err) {
-            console.error(err)
-            process.exit(1)
+            reportError(err)
+            process.exit(0)
         }
     }
 
@@ -42,7 +45,7 @@ class Kucoin {
         try {
             return await api.getOrders(params)
         } catch (err) {
-            console.error(err)
+            reportError(err)
         }
     }
 
@@ -50,7 +53,7 @@ class Kucoin {
         try {
             return await api.getPartOrderBook({ amount: 20, symbol: ticker })
         } catch (err) {
-            console.error(err)
+            reportError(err)
         }
     }
 
@@ -58,7 +61,7 @@ class Kucoin {
         try {
             return true
         } catch (err) {
-            console.error(err)
+            reportError(err)
         }
     }
 
@@ -77,28 +80,31 @@ class Kucoin {
             }
 
         } catch (err) {
-            console.error(err)
+            reportError(err)
         }
     }
 
+    async testMethodToSign() {
 
-    async  getAccounts() {
-        try {
-            const config = {
-                apiKey: process.env.kucoin_API_KEY,
-                secretKey: process.env.kucoin_SECRET,
-                passphrase: process.env.kucoin_PASSWORD,
-                environment: 'live'
-            }
+        let endpoint = `/api/v1/sub-accounts`
+        let url = `https://api.kucoin.com` + endpoint
+        logger.info(`${fileName} : ` + "getting sub-accounts")
+        let timestamp = Date.now()
+        let headers = {
+            "KC-API-KEY": process.env.kucoin_API_KEY,
+            "KC-API-SIGN": this.sign(timestamp, endpoint, 'GET', ""),
+            "KC-API-PASSPHRASE": process.env.kucoin_PASSWORD,
+            "KC-API-TIMESTAMP": timestamp
+        }
 
-            api.init(config)
-
-            let r = await api.getAccounts()
-            console.log(r.data)
-        } catch (err) {
-            console.log(err)
+        let response = await axios(url, { headers })
+        let resp = await response.data
+        console.log(JSON.stringify(resp))
+        if (resp.code != "200000") {
+            return Error(JSON.stringify(resp))
         }
     }
+
 
     async candles({ symbol, interval, startTime, endTime }) {
         let url = `https://api.kucoin.com/api/v1/market/candles?type=${interval}&symbol=${symbol}&startAt=${startTime}&endAt=${endTime}`
@@ -165,6 +171,27 @@ class Kucoin {
             case '1week':
                 return 7 * 24 * 60 * 60
         }
+    }
+
+    async  getBalance(currency = null) {
+        let resp = await api.getAccounts()
+        if (resp.code != "200000") {
+            return Error(JSON.stringify(resp))
+        }
+        let accounts = resp.data
+        console.log(accounts)
+        let balances = accounts.filter(acct => acct.currency == currency)
+        if (balances.length > 0) {
+            return balances[0].available
+        } else {
+            return 0
+        }
+
+    }
+
+    sign(timestamp, endpoint, method, body) {
+        let messageToSign = timestamp + method + endpoint + body
+        return Base64.stringify(hmacSHA256(messageToSign, process.env.kucoin_SECRET));
     }
 }
 

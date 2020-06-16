@@ -1,5 +1,6 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet'
 import { logger } from '../server/middlewares/logger'
+import { reportError } from '../notifiers'
 require('dotenv').config()
 let path = require('path')
 let fileName = path.basename(__filename)
@@ -66,7 +67,8 @@ export default class Sheets {
 
             } catch (error) {
                 logger.error("Error -" + error)
-                resolve(500)
+                reportError(error.message)
+                throw new Error(error.message)
             }
         })
     }

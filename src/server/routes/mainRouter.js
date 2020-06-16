@@ -7,6 +7,7 @@ import {
   stopTrading,
   pauseTrading,
   resumeTrading,
+  setWaitPeriod,
   addPair
 } from '../../admin'
 
@@ -97,6 +98,19 @@ mainRouter.post('/addPair',
       console.log(req.body)
       //add pair to trader
       let { code, message } = await addPair(req.body)
+      console.log(code, message)
+      next({ code, message })
+    }
+    catch (error) {
+      next(new Error(error))
+    }
+  })
+
+// route to update wait period between loops
+mainRouter.put('/setWait',
+  async (req, res, next) => {
+    try {
+      let { code, message } = setWaitPeriod(req.body.seconds)
       console.log(code, message)
       next({ code, message })
     }

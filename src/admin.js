@@ -6,6 +6,7 @@ import { intializeExchange } from './exchanges'
 import { updateTradeTimes } from './timer'
 import { logger } from './server/middlewares'
 import { sleep } from './utils/wait'
+import { reportError } from './notifiers'
 
 require('dotenv').config()
 
@@ -13,10 +14,14 @@ require('dotenv').config()
 
 //trading control flag
 var shouldTrade = true
-
+var wait = 30
 //initialise pairs object
 global.pairs = {}
 
+export function setWaitPeriod(periodInSec) {
+    wait = periodInSec
+    return { code: 200, message: `Wait period updated to ${periodInSec}` }
+}
 //pause trading
 export function pauseTrading() {
     shouldTrade = false
@@ -48,8 +53,13 @@ export async function addPair(pair) {
 //start trading
 export async function startTrading() {
     while (shouldTrade) {
-        startLoop()
-        await sleep(30)
+        try {
+            startLoop()
+            await sleep(wait)
+        } catch (err) {
+            reportError(err.message)
+        }
+
     }
 
 }

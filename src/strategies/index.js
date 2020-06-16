@@ -30,7 +30,9 @@ async function applyEMA(pair) {
     logger.info(`${fileName} : ` + `calculated EMA for ${symbol} is ${ema}`)
 
 
-    let { position, size } = records[records.length - 1]
+    //let { position, size } = records[records.length - 1]
+    let size = await pair.exchange.getBalance(pair.base)
+    let position = await pair.exchange.getBalance(pair.quote)
 
     let decision = {}
 

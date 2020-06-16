@@ -7,7 +7,7 @@ export async function notify(result) {
     await sendMessage(`
     ---- SMART-TRADER ----
     [ ${action} -  ${symbol}]
-    Price - ${price}
+    Price - ${price === undefined ? '-' : price}
     New Size - ${size}
     New Position - ${size * price}
     Exchange - ${exchangeId}

@@ -39,9 +39,6 @@ binance.isOrderComplete = async function (symbol, orderId) {
 
 }
 
-binance.candles = async function ({ symbol, interval, startTime, endTime }) {
-    let candles = await binance.candles({ symbol, interval, startTime, endTime })
-}
 binance.intervaltoMs = function (interval) {
     switch (interval) {
         case '1m':
@@ -75,6 +72,12 @@ binance.intervaltoMs = function (interval) {
         case '1M':
             return 30 * 24 * 60 * 60000
     }
+}
+
+binance.getBalance = async function (currency) {
+    let { balances } = await binance.accountInfo()
+    let found = balances.filter(bal => bal.asset == currency)
+    return found[0].free
 }
 
 export default binance

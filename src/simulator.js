@@ -1,8 +1,9 @@
-
-/****************************************|
- * ********    BACKTESTS   *******************
- * ***************************************
- ****************************************/
+import { sortBy } from 'lodash'
+import { default as kucoin } from './exchanges/KucoinTest'
+import { default as binance } from './exchanges/Binance'
+import { calculateEMA } from './strategies/ema'
+import { updateRecord } from './recorders'
+import { sleep } from './utils/wait'
 
 export async function simulateEMALongs(data, initialFunds) {
     let tradeStates = { LONG: 'long', SHORT: 'short', OUT: 'out' }
@@ -207,3 +208,29 @@ export async function simulateEMALongShort(data, initialFunds) {
 
     return results
 }
+
+
+function sortData(data) {
+    return sortBy(data, [function (o) { return o['opentime'] }]);
+}
+
+async function configureEmaData(symbol, startTime, endTime, emaPeriod, interval) {
+    let preEmaUnsortedData = await kucoin.candles({ symbol, interval, startTime, endTime })
+    console.log("========== PRE EMA DATA (Unsorted)=============")
+    console.log(preEmaUnsortedData)
+    let preEmaSortedData = sortData(preEmaUnsortedData)
+    console.log("========== PRE EMA DATA (Sorted)=============")
+    console.log(preEmaSortedData)
+    let postEmaData = calculateEMA(preEmaSortedData, emaPeriod)
+    console.log("-------- POST EMA DATA -----------")
+    console.log(postEmaData)
+    let results = await simulateEMALongs(postEmaData, '1')
+    console.log(results)
+    let i = 0
+    while (i < results.length) {
+        await updateRecord(results[i])
+        await sleep(5)
+        i++
+    }
+}
+configureEmaData("BTC-USDT", 1592265600, 1592291698, 10, '1day')
