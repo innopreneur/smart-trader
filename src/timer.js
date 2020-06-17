@@ -54,7 +54,10 @@ export const timer = {
                     break
             }
 
-            if (currentTime > pair.startTime && moment().diff(tradeDay) == 1) {
+            logger.debug(`${fileName} :  ${pair.symbol}  :  ` + `Current Time - ${currentTime}`)
+            logger.debug(`${fileName} :  ${pair.symbol}  :  ` + `Next Trade Time - ${pair.startTime}`)
+
+            if (currentTime > pair.startTime) {
                 logger.debug(`${fileName} :  ${pair.symbol}  :  ` + "YES! its time to trade")
                 return true
             }
