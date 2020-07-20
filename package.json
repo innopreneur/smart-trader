@@ -30,7 +30,7 @@
     "express-jsonschema": "^1.1.6",
     "google-spreadsheet": "^3.0.11",
     "kucoin-node-api": "^1.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "moment": "^2.25.3",
     "mongoose": "^5.9.2",
     "querystring": "^0.2.0",
