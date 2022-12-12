@@ -25,7 +25,7 @@
     "cors": "^2.8.5",
     "crypto-js": "^4.0.0",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-json-validator-middleware": "^2.1.1",
     "express-jsonschema": "^1.1.6",
     "google-spreadsheet": "^3.0.11",
